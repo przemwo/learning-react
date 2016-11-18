@@ -1,41 +1,41 @@
 import React from 'react';
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import Devtools from 'mobx-react-devtools';
 
-const appState = observable({
-  count: 0
-});
+const t = new class Temperature {
+  @observable unit = "C";
+  @observable temperatureCelsius = 25;
 
-appState.dec = function() {
-  this.count--;
+  @computed get temperatureKelvin() {
+    console.log('Calculating Kelvin');
+    return this.temperatureCelsius * (9/5) + 32;
+  }
+
+  @computed get temperature() {
+    console.log('Calculating temperature');
+    switch(this.unit) {
+      case "K":
+        return this.temperatureKelvin + "oK";
+      case "C":
+        return this.temperatureCelsius + "oC";
+    }
+  }
 };
-appState.inc = function() {
-  this.count++;
-};
 
-@observer class App extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+window.t = t;
 
-  handleDec = () => {
-    appState.dec();
-  }
+const Temp = observer((props) => (
+  <div>
+    {props.temperature.temperature}
+    <Devtools />
+  </div>
+));
 
-  handleInc = () => {
-    appState.inc();
-  }
-
+class App extends React.Component {
   render() {
     return(
-      <div>
-        <Devtools />
-        Counter: {appState.count}
-        <br />
-        <button onClick={this.handleDec}>-</button>
-        <button onClick={this.handleInc}>+</button>
-      </div>
+      <Temp temperature={t} />
     );
   }
 }
